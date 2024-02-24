@@ -172,8 +172,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	if (bFullScreen)
-		window = glfwCreateWindow(width, height, strTitle.c_str(),
-				glfwGetPrimaryMonitor(), nullptr);
+		window = glfwCreateWindow(width, height, strTitle.c_str(), glfwGetPrimaryMonitor(), nullptr);
 	else
 		window = glfwCreateWindow(width, height, strTitle.c_str(), nullptr,
 				nullptr);
@@ -206,8 +205,8 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	glViewport(0, 0, screenWidth, screenHeight);
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST); //Prueba de profundidad
+	glEnable(GL_CULL_FACE); //
 
 	// Inicialización de los shaders
 	shader.initialize("../Shaders/colorShader.vs", "../Shaders/colorShader.fs");
@@ -440,7 +439,8 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Filtering de maximimizacion
 	if(textureLandingPad.getData()){
 		// Transferir los datos de la imagen a la tarjeta
-		glTexImage2D(GL_TEXTURE_2D, 0, textureLandingPad.getChannels() == 3 ? GL_RGB : GL_RGBA, textureLandingPad.getWidth(), textureLandingPad.getHeight(), 0,
+		glTexImage2D(GL_TEXTURE_2D, 0, textureLandingPad.getChannels() == 3 ? GL_RGB : GL_RGBA, textureLandingPad.getWidth(), 
+			textureLandingPad.getHeight(), 0,
 		textureLandingPad.getChannels() == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, textureLandingPad.getData());
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
@@ -546,7 +546,7 @@ void mouseButtonCallback(GLFWwindow *window, int button, int state, int mod) {
 		}
 	}
 }
-
+//REcibe todos los eventos del usuario teclado-mouse
 bool processInput(bool continueApplication) {
 	if (exitApp || glfwWindowShouldClose(window) != 0) {
 		return false;
@@ -658,7 +658,7 @@ bool processInput(bool continueApplication) {
 	glfwPollEvents();
 	return continueApplication;
 }
-
+//Método de aplicación siempre repitiendose
 void applicationLoop() {
 	bool psi = true;
 
@@ -690,7 +690,7 @@ void applicationLoop() {
 	lastTime = TimeManager::Instance().GetTime();
 
 	while (psi) {
-		currTime = TimeManager::Instance().GetTime();
+		currTime = TimeManager::Instance().GetTime(); //Ocupamos medir el tiempo para hacer el framerate
 		if(currTime - lastTime < 0.016666667){
 			glfwPollEvents();
 			continue;
@@ -1001,7 +1001,7 @@ void applicationLoop() {
 }
 
 int main(int argc, char **argv) {
-	init(800, 700, "Window GLFW", false);
+	init(800, 700, "Práctica 00", false);
 	applicationLoop();
 	destroy();
 	return 1;

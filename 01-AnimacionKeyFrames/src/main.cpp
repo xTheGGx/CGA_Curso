@@ -143,6 +143,9 @@ float rotHelHelY = 0.0;
 int stateDoor = 0;
 float dorRotCount = 0.0;
 
+float avance = 0.1f;
+float giroEclipse = 0.5f;
+
 double deltaTime;
 double currTime, lastTime;
 
@@ -994,6 +997,81 @@ void applicationLoop() {
 		glCullFace(oldCullFaceMode);
 		glDepthFunc(oldDepthFuncMode);
 
+		/*******Máquina de estado*******/
+		switch (state){
+		case 0:
+			if (numberAdvance == 0)
+				maxAdvance = 65.0f;
+			if (numberAdvance == 1)
+				maxAdvance = 49.0f;
+			if (numberAdvance == 2)
+				maxAdvance = 44.5f;
+			if (numberAdvance == 3)
+				maxAdvance = 49.0f;
+			if (numberAdvance == 4)
+				maxAdvance = 44.5f;
+			state = 1;
+			break;
+		case 1:
+			modelMatrixEclipse = glm::translate(modelMatrixEclipse, glm::vec3(0.0f, 0.0f, avance));
+			advanceCount += avance;
+			rotWheelsX += 0.05f;
+			rotWheelsY -= 0.2f;
+			if (rotWheelsY < 0 )
+			{
+				rotWheelsY = 0.0f;
+			}
+			
+			if (advanceCount > maxAdvance){
+				advanceCount = 0;
+				numberAdvance++;
+				state = 2;
+			}
+			break;
+		case 2:
+			modelMatrixEclipse = glm::translate(modelMatrixEclipse, glm::vec3(0.0f, 0.0f, 0.025f));
+			modelMatrixEclipse = glm::rotate(modelMatrixEclipse, glm::radians(giroEclipse), 
+				glm::vec3(0.0f, 1.0f, 0.0f));
+			rotCount += giroEclipse;
+			rotWheelsX += 0.01f;
+			rotWheelsY += 0.02f;
+			if (rotWheelsY >= 0.25f)
+			{
+				rotWheelsY = 0.25f;
+			}
+			if (rotCount >= 90.0f){
+				state = 0;
+				rotCount = 0;
+				if (numberAdvance > 4)
+				{
+					numberAdvance = 1;
+				}
+			}
+			break;
+		default:
+			break;
+		}
+
+		/*Máquina de estados lamborgini*/
+		switch (stateDoor){
+		case 0:
+			dorRotCount += 0.6f;
+			if (dorRotCount > 75.0f)
+			{
+				stateDoor = 1;
+			}
+			break;
+		case 1:
+			dorRotCount -= 0.6f;
+			if (dorRotCount < 0)
+			{
+				stateDoor = 0;
+			}
+			break;
+		default:
+			break;
+		}
+
 		// Constantes de animaciones
 		rotHelHelY += 0.5;
 
@@ -1002,7 +1080,7 @@ void applicationLoop() {
 }
 
 int main(int argc, char **argv) {
-	init(800, 700, "Window GLFW", false);
+	init(800, 700, "Práctica 01", false);
 	applicationLoop();
 	destroy();
 	return 1;
