@@ -337,7 +337,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	// Buzz
 	modelBuzzTorso.loadModel("../models/buzz/buzzlightyTorso.obj");
 	modelBuzzTorso.setShader(&shaderMulLighting);
-	modelBuzzHead.loadModel("../models/buzz/buzzlightyHead.obj");
+	modelBuzzHead.loadModel("../models/buzz/buzzlightyHead1.obj");
 	modelBuzzHead.setShader(&shaderMulLighting);
 	modelBuzzLeftArm.loadModel("../models/buzz/buzzlightyLeftArm.obj");
 	modelBuzzLeftArm.setShader(&shaderMulLighting);
