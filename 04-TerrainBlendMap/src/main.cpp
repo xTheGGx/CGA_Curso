@@ -103,6 +103,10 @@ Model cowboyModelAnimate;
 Model guardianModelAnimate;
 // Cybog
 Model cyborgModelAnimate;
+
+//Model Omen
+Model modelOmen;
+
 // Terrain model instance
 Terrain terrain(-1, -1, 200, 32, "../Textures/heightmap4.png");
 
@@ -141,6 +145,7 @@ glm::mat4 modelMatrixMayow = glm::mat4(1.0f);
 glm::mat4 modelMatrixCowboy = glm::mat4(1.0f);
 glm::mat4 modelMatrixGuardian = glm::mat4(1.0f);
 glm::mat4 modelMatrixCyborg = glm::mat4(1.0f);
+glm::mat4 modelMatrixOmen = glm::mat4(1.0f);
 
 int animationMayowIndex = 1;
 float rotDartHead = 0.0, rotDartLeftArm = 0.0, rotDartLeftHand = 0.0, rotDartRightArm = 0.0, rotDartRightHand = 0.0, rotDartLeftLeg = 0.0, rotDartRightLeg = 0.0;
@@ -192,6 +197,9 @@ float dorRotCount = 0.0;
 
 double deltaTime;
 double currTime, lastTime;
+
+//Variables de movimiento de Omen
+int animationOmenIndex = 0;
 
 // Variables animacion maquina de estados eclipse
 const float avance = 0.1;
@@ -370,6 +378,10 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	// Cyborg
 	cyborgModelAnimate.loadModel("../models/cyborg/cyborg.fbx");
 	cyborgModelAnimate.setShader(&shaderMulLighting);
+
+	//Omen
+	modelOmen.loadModel("../models/omen/omen1.fbx");
+	modelOmen.setShader(&shaderMulLighting);
 
 	// Terreno
 	terrain.init();
@@ -593,7 +605,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	textureB.freeImage(); // Liberamos memoria
 
 	//Definiendo la textura del mapa de mezclas
-	Texture textureBlendMap("../Textures/blendmap4.png");
+	Texture textureBlendMap("../Textures/blendMap4.png");
 	textureBlendMap.loadImage(); // Cargar la textura
 	glGenTextures(1, &textureTerrainBlendMapID); // Creando el id de la textura del landingpad
 	glBindTexture(GL_TEXTURE_2D, textureTerrainBlendMapID); // Se enlaza la textura
@@ -667,7 +679,7 @@ void destroy() {
 	cowboyModelAnimate.destroy();
 	guardianModelAnimate.destroy();
 	cyborgModelAnimate.destroy();
-
+	modelOmen.destroy();
 	// Terrains objects Delete
 	terrain.destroy();
 
@@ -879,21 +891,24 @@ bool processInput(bool continueApplication) {
 	else if (modelSelected == 2 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		modelMatrixBuzz = glm::translate(modelMatrixBuzz, glm::vec3(0.0, 0.0, -0.02));
 
-	// Controles de mayow
+	/*****************************************
+	 *  Entrada para movimiento de Omen
+	******************************************/
 	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
-		modelMatrixMayow = glm::rotate(modelMatrixMayow, 0.02f, glm::vec3(0, 1, 0));
-		animationMayowIndex = 0;
-	} else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
-		modelMatrixMayow = glm::rotate(modelMatrixMayow, -0.02f, glm::vec3(0, 1, 0));
-		animationMayowIndex = 0;
+		modelMatrixOmen = glm::rotate(modelMatrixOmen, 0.02f, glm::vec3(0, 1, 0));
+		animationOmenIndex = 0;
+	}
+	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
+		modelMatrixOmen = glm::rotate(modelMatrixOmen, -0.02f, glm::vec3(0, 1, 0));
+		animationOmenIndex = 0;
 	}
 	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
-		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0.0, 0.0, 0.02));
-		animationMayowIndex = 0;
+		modelMatrixOmen = glm::translate(modelMatrixOmen, glm::vec3(0.0, 0.0, 0.02));
+		animationOmenIndex = 0;
 	}
 	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
-		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0.0, 0.0, -0.02));
-		animationMayowIndex = 0;
+		modelMatrixOmen = glm::translate(modelMatrixOmen, glm::vec3(0.0, 0.0, -0.02));
+		animationOmenIndex = 0;
 	}
 
 	glfwPollEvents();
@@ -934,7 +949,7 @@ void applicationLoop() {
 	modelMatrixGuardian = glm::rotate(modelMatrixGuardian, glm::radians(-90.0f), glm::vec3(1.0, 0.0, 0.0));
 
 	modelMatrixCyborg = glm::translate(modelMatrixCyborg, glm::vec3(5.0f, 0.05, 0.0f));
-
+	modelMatrixOmen = glm::translate(modelMatrixOmen, glm::vec3(17.0f, 0.0f, -15.0));
 	// Variables to interpolation key frames
 	fileName = "../animaciones/animation_dart_joints.txt";
 	keyFramesDartJoints = getKeyRotFrames(fileName);
@@ -1225,6 +1240,27 @@ void applicationLoop() {
 		cyborgModelAnimate.setAnimationIndex(1);
 		cyborgModelAnimate.render(modelMatrixCyborgBody);
 
+
+		/*******************************************
+		 * Render de Omen
+		*******************************************/
+		//Sistema de referencia
+		glm::vec3 yAxis = glm::normalize(terrain.getNormalTerrain(modelMatrixOmen[3][0], modelMatrixOmen[3][2]));
+		//Mirando hacia la izq
+		glm::vec3 xAxis = glm::vec3(modelMatrixOmen[0]);
+		//Producto cruz para eje z
+		glm::vec3 zAxis = glm::normalize(glm::cross(xAxis, yAxis));
+		//eje x perpendicular
+		xAxis = glm::normalize(glm::cross(yAxis, zAxis));
+		modelMatrixOmen[0] = glm::vec4(xAxis, 0);
+		modelMatrixOmen[1] = glm::vec4(yAxis, 0);
+		modelMatrixOmen[2] = glm::vec4(zAxis, 0);
+		modelMatrixOmen [3][1] = terrain.getHeightTerrain(modelMatrixOmen[3][0], modelMatrixOmen[3][2]);
+		glm::mat4 modelMatrixOmenBody = glm::mat4(modelMatrixOmen);
+		modelMatrixOmenBody = glm::scale(modelMatrixOmenBody, glm::vec3(0.015));
+		modelOmen.setAnimationIndex(animationOmenIndex);
+		modelOmen.render(modelMatrixOmenBody);
+		animationOmenIndex = 1;
 		/*******************************************
 		 * Skybox
 		 *******************************************/

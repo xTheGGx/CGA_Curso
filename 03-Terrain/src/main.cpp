@@ -379,7 +379,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	cyborgModelAnimate.setShader(&shaderMulLighting);
 
 	//Omen
-	modelOmen.loadModel("../models/omen/omen.fbx");
+	modelOmen.loadModel("../models/omen/omen1.fbx");
 	modelOmen.setShader(&shaderMulLighting);
 
 	terrain.init();
@@ -815,19 +815,19 @@ bool processInput(bool continueApplication) {
 	******************************************/
 	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
 		modelMatrixOmen = glm::rotate(modelMatrixOmen, 0.02f, glm::vec3(0, 1, 0));
-		animationOmenIndex = 1;
+		animationOmenIndex = 0;
 	}
 	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
 		modelMatrixOmen = glm::rotate(modelMatrixOmen, -0.02f, glm::vec3(0, 1, 0));
-		animationOmenIndex = 1;
+		animationOmenIndex = 0;
 	}
 	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
 		modelMatrixOmen = glm::translate(modelMatrixOmen, glm::vec3(0.0, 0.0, 0.02));
-		animationOmenIndex = 1;
+		animationOmenIndex = 0;
 	}
 	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
 		modelMatrixOmen = glm::translate(modelMatrixOmen, glm::vec3(0.0, 0.0, -0.02));
-		animationOmenIndex = 1;
+		animationOmenIndex = 0;
 	}
 
 
@@ -1243,7 +1243,7 @@ void applicationLoop() {
 		modelMatrixOmenBody = glm::scale(modelMatrixOmenBody, glm::vec3(0.015));
 		modelOmen.setAnimationIndex(animationOmenIndex);
 		modelOmen.render(modelMatrixOmenBody);
-		animationOmenIndex = 0;
+		animationOmenIndex = 1;
 		
 		/*******************************************
 		 * Skybox
