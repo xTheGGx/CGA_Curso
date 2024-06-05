@@ -796,6 +796,43 @@ bool processInput(bool continueApplication) {
 	if (exitApp || glfwWindowShouldClose(window) != 0) {
 		return false;
 	}
+	/***********************
+		Manejo del Joystick
+	************************/
+	if(glfwJoystickPresent(GLFW_JOYSTICK_1)){
+		std::cout << "El joystick esta presente" << std::endl;
+		int axesCount, buttonCount;
+		const float *axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
+		std::cout << "Numero de ejes disponibles :=>" << axesCount << std::endl;
+		//std::cout << "Left stick X axis" << axes[0] << std::endl;
+		//std::cout << "Left stick Y axis" << axes[1] << std::endl;
+		//std::cout << "Left stick X axis " << axes[2] << std::endl;
+		if(fabs(axes[1]) > 0.2){
+			modelMatrixOmen = glm::translate(modelMatrixOmen, glm::vec3(0, 0, -axes[1] * 0.1));
+			animationOmenIndex = 1;
+		}
+		if (fabs(axes[0] >0.2))
+		{
+			modelMatrixOmen = glm::rotate(modelMatrixOmen, glm::radians(-axes[0] * 0.5f ),glm::vec3 (0,1,0));
+			animationOmenIndex = 1;
+		}
+		if(fabs(axes[2] > 0.2)){
+			camera -> mouseMoveCamera(axes[2], 0.0f, deltaTime);
+		}
+		if (fabs(axes[3] > 0.2))
+		{
+			camera -> mouseMoveCamera(0.0f, axes[3], deltaTime);
+		}
+		const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonCount);
+		std::cout << "Numero de botones diponibles :=> " << buttonCount << std::endl;
+		if (buttons[0] == GLFW_PRESS)		
+		{
+			std::cout << "Presionado :=> " << std::endl;
+		}
+	
+		
+	}
+
 	//Camara tercera persona
 	if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT == GLFW_PRESS))
 		camera -> mouseMoveCamera(offsetX, 0.0, deltaTime);

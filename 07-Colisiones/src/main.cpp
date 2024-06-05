@@ -15,6 +15,8 @@
 
 // Shader include
 #include "Headers/Shader.h"
+//Colisiones
+#include "Headers/Colisiones.h"
 
 // Model geometric includes
 #include "Headers/Sphere.h"
@@ -196,6 +198,8 @@ float rotHelHelBack = 0.0;
 // Var animate lambo dor
 int stateDoor = 0;
 float dorRotCount = 0.0;
+
+bool isPicking = false;
 
 // Lamps position
 std::vector<glm::vec3> lamp1Position = {
@@ -791,6 +795,7 @@ bool processInput(bool continueApplication) {
 		return false;
 	}
 
+	
 	if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 		camera->mouseMoveCamera(offsetX, 0.0, deltaTime);
 	if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
@@ -956,7 +961,16 @@ bool processInput(bool continueApplication) {
 		tmv = 0;
 
 	}
-	
+
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+	{
+		isPicking = true;
+	}
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+	{
+		isPicking = false;
+	}
+		
 
 	glfwPollEvents();
 	return continueApplication;
@@ -1021,6 +1035,7 @@ void applicationLoop() {
 		deltaTime = TimeManager::Instance().DeltaTime;
 		psi = processInput(true);
 
+		std::map<std::string, bool> collisionDetector;
 		// Variables donde se guardan las matrices de cada articulacion por 1 frame
 		std::vector<float> matrixDartJoints;
 		std::vector<glm::mat4> matrixDart;
@@ -1417,6 +1432,9 @@ void applicationLoop() {
 		glDepthFunc(oldDepthFuncMode);
 
 		//Ray Mayow direction
+		// Colliders
+		std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> > collidersOBB;
+		std::map<std::string, std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> > collidersSBB;
 		glm::mat4 modelMatrixRay = glm::mat4(modelMatrixMayow);
 		modelMatrixRay = glm::translate(modelMatrixRay, glm::vec3(0.0f , 1.0f, 0.0f));
 		float maxDistanceRay = 15.0;
@@ -1428,6 +1446,70 @@ void applicationLoop() {
 		modelMatrixRay = glm::rotate(modelMatrixRay, glm::radians(90.0f),glm::vec3(1, 0, 0));
 		modelMatrixRay = glm::scale(modelMatrixRay, glm::vec3(0.05f, maxDistanceRay, 0.05f));
 		rayModel.render(modelMatrixRay);
+		
+		bool isCollision;
+		std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator itSBB;
+		std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator itSBB1;
+
+		for(itSBB1 = collidersSBB.begin(); itSBB != collidersSBB.end(); itSBB1++){
+			float tRint;
+			if(raySphereIntersect(ori, dest, rayDirection, std::get<0>(itSBB1 -> second),tRint)){
+				std::cout << "Colision rayo mayow y " << itSBB1 -> first << std::endl;
+			}
+		}
+
+		std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator itOBB;
+	
+		for(itOBB = collidersOBB.begin(); itOBB != collidersOBB.end(); itOBB++){
+			if(testRayOBB(ori,dest, std::get<0>(itOBB -> second)))
+				std::cout << "Hay colisión entre el rayo y el modelo" << itOBB->first << std::endl;
+		}
+
+		addOrUpdateCollisionDetection(collisionDetector, itOBB->first, isCollision);
+
+		std::map<std::string, bool>::iterator itCollision;
+		for (itCollision = collisionDetector.begin() ; itCollision != collisionDetector.end(); itCollision++)
+		{
+			std::map<std::string, std::tuple<AbstractModel::OBB, 
+			glm::mat4, glm::mat4 >>::iterator itOBBuscado = collidersOBB.find(
+				itCollision->first);
+	
+			std::map<std::string, std::tuple<AbstractModel::SBB, 
+			glm::mat4, glm::mat4 >>::iterator itSBBuscado = collidersSBB.find(
+				itCollision->first);
+			if (itOBBuscado != collidersOBB.end())
+			{
+				if(itCollision->second)
+				addOrUpdateColliders(collidersOBB, itCollision->first);
+				else{
+					if (itCollision->first.compare("mayow") ==0)
+						modelMatrixMayow = std::get<1>(itOBBuscado->second);
+					if (itCollision->first.compare("dart") ==0)
+						modelMatrixDart = std::get<1>(itOBBuscado->second);					
+				}
+			}
+			if (itSBBuscado != collidersSBB.end())
+			{
+				if (!itCollision->second)
+				{
+					addOrUpdateColliders(collidersSBB,itCollision->first);
+				}
+			}
+		}
+		if (isPicking)
+		{
+			glm::vec4 viewPort = glm::vec4(0.0, 0.0, screenWidth, screenHeight);
+			glm::vec3 o = glm::unProject(
+				glm::vec3(
+					lastMousePosX,
+					screenHeight - lastMousePosY,
+					0.0f), view, projection,
+						viewPort);//Obtener la coorenada en 3 imensiones del plano cercano en el pixel seleccionado de la ventana.
+			glm::vec3 t = glm::unProject(
+				glm::vec3(lastMousePosX, screenHeight- lastMousePosY, 1.0f), view, projection,
+				viewPort);//Obtener la ordenada 3d del plano lejano en el pixel seleccionado de la ventana			
+		}
+		
 
 		// Animaciones por keyframes dart Vader
 		// Para salvar los keyframes
